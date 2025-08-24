@@ -1,212 +1,176 @@
-✈️ Honeywell Hackathon — Flight Scheduling & Delay Insights
-📌 Problem Statement
 
-Busy airports like Mumbai (BOM) and Delhi (DEL) face congestion due to high traffic, limited runway slots, and cascading disruptions. Controllers need AI-driven insights to:
+# ✈️ Honeywell Hackathon — Flight Scheduling & Delay Insights
 
-Suggest the best hours for takeoff and landing.
+## 📌 Problem Statement
 
-Identify congestion-prone time slots.
+Busy airports like **Mumbai (BOM)** and **Delhi (DEL)** face congestion due to high traffic, limited runway slots, and cascading disruptions. Controllers need **AI-driven insights** to:
 
-Tune flight schedules to reduce delays.
+1. Suggest the best hours for takeoff and landing.
+2. Identify congestion-prone time slots.
+3. Tune flight schedules to reduce delays.
+4. Detect flights with **cascading impacts** on others.
 
-Detect flights with cascading impacts on others.
+Dataset: **One week of flights at Mumbai Airport (from Flightradar24 & FlightAware).**
+Constraint: **Data only available from 6:00 AM to 12:00 PM daily.**
 
-Dataset: One week of flights at Mumbai Airport (from Flightradar24 & FlightAware).
-Constraint: Data only available from 6:00 AM to 12:00 PM daily.
+---
 
-✅ Deliverables
-1. Proposed Solution
+## ✅ Deliverables
 
-We built a Streamlit-based interactive dashboard integrated with AI-powered query support.
+### 1. **Proposed Solution**
 
-Uses open-source analytics (pandas, scikit-learn, networkx) + Gemini API (optional) for natural language queries.
+We built a **Streamlit-based interactive dashboard** integrated with **AI-powered query support**.
 
-Provides visual insights (charts, heatmaps, networks) to simplify scheduling analysis.
+* Uses **open-source analytics (pandas, scikit-learn, networkx)** + **Gemini API (optional)** for natural language queries.
+* Provides **visual insights** (charts, heatmaps, networks) to simplify scheduling analysis.
+* Includes a **What-If simulator**: shift flight times & predict delay changes.
+* Uniqueness: We merged **classical data analysis (statistics + ML)** with **plain-English AI queries**, making insights accessible to both technical staff and non-technical operators.
 
-Includes a What-If simulator: shift flight times & predict delay changes.
+---
 
-Uniqueness: We merged classical data analysis (statistics + ML) with plain-English AI queries, making insights accessible to both technical staff and non-technical operators.
+### 2. **Technical Approach**
 
-2. Technical Approach
-⚙️ Tech Stack
+#### ⚙️ Tech Stack
 
-Language: Python
+* **Language**: Python
+* **Frameworks**:
 
-Frameworks:
+  * Streamlit (UI/dashboard)
+  * pandas, numpy (data analysis)
+  * scikit-learn (RandomForest for prediction)
+  * networkx + matplotlib (cascading impact graphs)
+  * plotly (interactive charts & heatmaps)
+* **AI Integration**: Gemini API (via `google-generativeai`) for NLP prompts.
+* **Environment Management**: `.env` for API key, venv for dependencies.
 
-Streamlit (UI/dashboard)
+#### 📊 Methodology & Pages
 
-pandas, numpy (data analysis)
+1. **Best Hours (Task 1)**
 
-scikit-learn (RandomForest for prediction)
+   * Method: Compare **scheduled time vs actual time**, calculate **average/minimum delay** per hour.
+   * Visuals: Line plots with **confidence intervals**, bar charts, and heatmaps.
+   * Tech terms explained:
 
-networkx + matplotlib (cascading impact graphs)
+     * **Mean delay**: Average waiting time.
+     * **Median delay**: Middle value (ignores extremes).
+     * **P90 delay**: Delay value below which 90% of flights lie.
 
-plotly (interactive charts & heatmaps)
+2. **Busiest Slots (Task 2)**
 
-AI Integration: Gemini API (via google-generativeai) for NLP prompts.
+   * Method: Group flights into **time slots (15/30/60 minutes)** and count flights per slot.
+   * Normalized per day to account for data coverage.
+   * Tech terms explained:
 
-Environment Management: .env for API key, venv for dependencies.
+     * **Time slots**: Dividing hours into smaller blocks (like 9:00–9:30).
+     * **Congestion**: Too many flights in the same slot.
 
-📊 Methodology & Pages
+3. **What-If Delay (Task 3)**
 
-Best Hours (Task 1)
+   * Method: Train a **RandomForest Regressor** (a machine learning model) using features like:
 
-Method: Compare scheduled time vs actual time, calculate average/minimum delay per hour.
+     * Departure hour
+     * Day of week (weekday/weekend)
+     * Origin/Destination
+   * Simulates delay if departure time is shifted ±120 minutes.
+   * Tech terms explained:
 
-Visuals: Line plots with confidence intervals, bar charts, and heatmaps.
+     * **RandomForest**: A collection of many decision trees voting together.
+     * **Prediction R²**: A score (0–1) showing how well the model fits.
+     * **RMSE**: Root Mean Square Error, shows typical prediction error in minutes.
 
-Tech terms explained:
+4. **Cascades (Task 4)**
 
-Mean delay: Average waiting time.
+   * Method: Build a **graph network** where:
 
-Median delay: Middle value (ignores extremes).
+     * Each flight = a node.
+     * Delay passed from one flight to the next = an edge.
+     * Edge weight proportional to delay passed.
+   * Identify flights with **highest outgoing influence** (top spreaders of delays).
+   * Tech terms explained:
 
-P90 delay: Delay value below which 90% of flights lie.
+     * **Graph**: A network of nodes (flights) and edges (connections).
+     * **Cascading impact**: One delay causing a ripple effect.
+     * **Influence score**: Sum of all delays a flight passes forward.
 
-Busiest Slots (Task 2)
+5. **AI Query Page (Bonus)**
 
-Method: Group flights into time slots (15/30/60 minutes) and count flights per slot.
+   * Method: Parse user queries using **offline regex parser** OR **Gemini API**.
+   * Supports:
 
-Normalized per day to account for data coverage.
+     * Best hours / busiest slots / what-if / cascades.
+     * CSV Q\&A (e.g., “show flights from BOM to BAH on July 24”).
+   * Tech terms explained:
 
-Tech terms explained:
+     * **NLP (Natural Language Processing)**: Teaching computers to understand plain English.
+     * **Prompt parsing**: Converting English → structured filters.
 
-Time slots: Dividing hours into smaller blocks (like 9:00–9:30).
+---
 
-Congestion: Too many flights in the same slot.
+### 3. **Feasibility & Viability**
 
-What-If Delay (Task 3)
+#### Constraints
 
-Method: Train a RandomForest Regressor (a machine learning model) using features like:
+* **Dataset limited to 6:00 AM – 12:00 PM.**
 
-Departure hour
+  * Means we cannot predict late evening/night flights.
+  * Still useful for **morning congestion**, which is often peak at airports.
 
-Day of week (weekday/weekend)
+#### Time Constraint (Runway Capacity)
 
-Origin/Destination
+* **Technical term**: “Time-window capacity constraint.”
+* Meaning: Each runway slot can only handle a **fixed number of flights** due to safety rules.
+* Example: *Like only 2 kids can get on the bus every minute; if 10 show up, some must wait.*
 
-Simulates delay if departure time is shifted ±120 minutes.
+#### Risks & Challenges
 
-Tech terms explained:
+* **Incomplete data** (only half-day coverage).
+* **Model accuracy** (R² \~ 0.5 → medium predictive power).
+* **External factors** (weather, maintenance) not included.
 
-RandomForest: A collection of many decision trees voting together.
+#### Mitigation
 
-Prediction R²: A score (0–1) showing how well the model fits.
+* Normalized per-day averages to handle missing hours.
+* Explain limitations clearly in UI.
+* Left hooks for integration with **real-time APIs** in future.
 
-RMSE: Root Mean Square Error, shows typical prediction error in minutes.
+---
 
-Cascades (Task 4)
+### 4. **Research & References**
 
-Method: Build a graph network where:
+* FlightRadar24: [https://www.flightradar24.com](https://www.flightradar24.com)
+* FlightAware: [https://www.flightaware.com](https://www.flightaware.com)
+* Pandas Documentation: [https://pandas.pydata.org](https://pandas.pydata.org)
+* Scikit-learn Documentation: [https://scikit-learn.org](https://scikit-learn.org)
+* NetworkX Documentation: [https://networkx.org](https://networkx.org)
+* Plotly Express: [https://plotly.com/python/plotly-express/](https://plotly.com/python/plotly-express/)
 
-Each flight = a node.
+---
 
-Delay passed from one flight to the next = an edge.
+## 🚀 How It Solves the Problem
 
-Edge weight proportional to delay passed.
+* **Controllers**: See best slots instantly (instead of trial/error scheduling).
+* **Airlines**: Use What-If simulation to adjust departure times.
+* **ATC**: Identify high-impact flights early to manage resources.
+* **Passengers**: Benefit indirectly from reduced congestion & delays.
 
-Identify flights with highest outgoing influence (top spreaders of delays).
+---
 
-Tech terms explained:
+## 📊 Pages in the App
 
-Graph: A network of nodes (flights) and edges (connections).
+1. **Best Hours** → Find hours with lowest average delays.
+2. **Busiest Slots** → Visualize congestion per slot.
+3. **What-If Delay** → Simulate impact of shifting a flight.
+4. **Cascades** → Spot flights spreading delays.
+5. **AI Query** → Ask in plain English, get structured insights.
 
-Cascading impact: One delay causing a ripple effect.
+---
 
-Influence score: Sum of all delays a flight passes forward.
+## ✨ Innovation & Uniqueness
 
-AI Query Page (Bonus)
+* **Combination of statistics + ML + NLP.**
+* **Visualization-first** approach (heatmaps, graphs).
+* **Accessible to non-technical users** (child-friendly explanations in UI).
+* **Scalable design** — ready to plug into **real-time APIs** for deployment.
 
-Method: Parse user queries using offline regex parser OR Gemini API.
+---
 
-Supports:
-
-Best hours / busiest slots / what-if / cascades.
-
-CSV Q&A (e.g., “show flights from BOM to BAH on July 24”).
-
-Tech terms explained:
-
-NLP (Natural Language Processing): Teaching computers to understand plain English.
-
-Prompt parsing: Converting English → structured filters.
-
-3. Feasibility & Viability
-Constraints
-
-Dataset limited to 6:00 AM – 12:00 PM.
-
-Means we cannot predict late evening/night flights.
-
-Still useful for morning congestion, which is often peak at airports.
-
-Time Constraint (Runway Capacity)
-
-Technical term: “Time-window capacity constraint.”
-
-Meaning: Each runway slot can only handle a fixed number of flights due to safety rules.
-
-Example: Like only 2 kids can get on the bus every minute; if 10 show up, some must wait.
-
-Risks & Challenges
-
-Incomplete data (only half-day coverage).
-
-Model accuracy (R² ~ 0.5 → medium predictive power).
-
-External factors (weather, maintenance) not included.
-
-Mitigation
-
-Normalized per-day averages to handle missing hours.
-
-Explain limitations clearly in UI.
-
-Left hooks for integration with real-time APIs in future.
-
-4. Research & References
-
-FlightRadar24: https://www.flightradar24.com
-
-FlightAware: https://www.flightaware.com
-
-Pandas Documentation: https://pandas.pydata.org
-
-Scikit-learn Documentation: https://scikit-learn.org
-
-NetworkX Documentation: https://networkx.org
-
-Plotly Express: https://plotly.com/python/plotly-express/
-
-🚀 How It Solves the Problem
-
-Controllers: See best slots instantly (instead of trial/error scheduling).
-
-Airlines: Use What-If simulation to adjust departure times.
-
-ATC: Identify high-impact flights early to manage resources.
-
-Passengers: Benefit indirectly from reduced congestion & delays.
-
-📊 Pages in the App
-
-Best Hours → Find hours with lowest average delays.
-
-Busiest Slots → Visualize congestion per slot.
-
-What-If Delay → Simulate impact of shifting a flight.
-
-Cascades → Spot flights spreading delays.
-
-AI Query → Ask in plain English, get structured insights.
-
-✨ Innovation & Uniqueness
-
-Combination of statistics + ML + NLP.
-
-Visualization-first approach (heatmaps, graphs).
-
-Accessible to non-technical users (child-friendly explanations in UI).
-
-Scalable design — ready to plug into real-time APIs for deployment.
