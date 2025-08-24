@@ -7,7 +7,7 @@ st.set_page_config(page_title="Flight Ops Insights (6–12)", layout="wide")
 st.title("Flight Ops Insights (6–12)")
 
 # ---------- Config ----------
-CSV_PATH = r"\data\flight_data_clean.csv"
+CSV_PATH = r"data/flight_data_clean.csv"
 REQUIRED_DATE_COLS = ["Date","STD","ATD","STA","ATA"]
 # Optional columns (used if present)
 OPT_COLS = ["Flight Number","From","To","Airline","Tail","dep_delay_min","arr_delay_min"]
