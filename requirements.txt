@@ -6,3 +6,4 @@ google-generativeai
 matplotlib
 networkx
 scikit-learn
+plotly
